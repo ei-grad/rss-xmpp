@@ -1,0 +1,4 @@
+cron:
+- description: feeding
+  url: /cron/feeding
+  schedule: every 10 minutes

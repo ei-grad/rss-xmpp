@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Feeds</h3>
+{% for account in accounts %}
+<b>{{ account.jid.address }}:</b>
+<ul>
+    {% for af in account.accountfeed_set %}
+    <li><a href="{{ af.feed.url }}">{{ af.feed.url}}</a></li>
+    {% endfor %}
+{% endfor %}
+</ul>
+{% endblock %}
+

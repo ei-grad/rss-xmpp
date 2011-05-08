@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if error %}
+<p style="color: red;">{{ error }}</p>
+{% endif %}
+
+<h3>Enter a key from output of 'LOGIN' command, sent by your XMPP account.</h3>
+
+<form method="post">
+    <input name="key" />
+    <input type="submit" value="Login" />
+</form>
+{% endblock %}
+

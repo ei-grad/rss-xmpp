@@ -1,0 +1,19 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>Simple rss2xmpp bot for Google App Engine</title>
+    <link rel="stylesheet" href="/static/style.css" type="text/css" />
+</head>
+<body>
+    <a href="http://github.com/ei-grad/rss-xmpp"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/6429057dfef9e98189338d22e7f6646c6694f032/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub"></a>
+    <div id="wrapper">
+        {% if user %}
+        <div id="usermenu">
+            <span><b>{{ user.nickname }}</b> | <a href="{{ logout_url }}">Logout</a></span>
+        </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
+

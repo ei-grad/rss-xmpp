@@ -6,7 +6,7 @@
 <b>{{ account.jid.address }}:</b>
 <ul>
     {% for af in account.accountfeed_set %}
-    <li><a href="{{ af.feed.url }}">{{ af.feed.url}}</a></li>
+    <li><a href="{{ af.feed.url }}">{{ af.feed.url}}</a> {{ af.keywords }}</li>
     {% endfor %}
 {% endfor %}
 </ul>

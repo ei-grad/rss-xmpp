@@ -1,22 +1,26 @@
 Simple rss2xmpp bot for Google App Engine
 =========================================
 
-Example
--------
-rss-xmpp@appspot.com
+Demo
+----
+You could try to use xmpp://rss-xmpp@appspot.com bot.
 
-Bot commands
-------------
+Command list:
+-------------
 
-- HELP [<command>] 
+```
+HELP [<command>]
     Show help message for some command.
-- PING
+PING
     Answer PONG.
-- ADD <url>
+ADD <url> [keywords]
     Adds a feed url.
-- DEL <url>
+DEL <url> [keywords]
     Removes a feed from your list.
-- FEEDS
-    Get list of feeds.
-- LOGIN
+DESTROY
+    Remove all data associated with your account.
+LOGIN
     Get a key to login via web interface.
+FEEDS
+    Get list of feeds.
+```

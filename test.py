@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import os
+import logging
 
 from dev_appserver import fix_sys_path
 fix_sys_path()
@@ -21,7 +25,7 @@ url = 'http://feeds.feedburner.com/github'
 class XMPPTestMessage(xmpp.Message):
     def reply(self, body, message_type="chat", raw_xml=False, send_message=xmpp.send_message):
         super(XMPPTestMessage, self).reply(body, message_type, raw_xml, send_message)
-        print('\nSent message:\n' + '='*80 + '\n' + body + '='*80 + '\n')
+        logging.debug('\nSent message:\n' + '='*80 + '\n' + body + '='*80 + '\n')
 
 class TestRSSXMPP(unittest.TestCase):
 
@@ -62,15 +66,76 @@ tricks&lt;/span&gt;</description>
     def test_handle_message(self):
         self.handle_message('help')
         self.handle_message('abrakadabra')
+        self.handle_message('ping qwe asdasd qweqwe')
+        self.handle_message(u'проверка')
 
     def test_xmpp_commands(self):
-        self.assertEqual(xmpp_commands['PING'](self.from_addr), 'PONG\n')
-        self.assertEqual(xmpp_commands['ADD'](self.from_addr, url), 'Feed %s added.\n' % url)
-        self.assertEqual(xmpp_commands['ADD'](self.from_addr, url), 'Feed %s already added.\n' % url)
-        self.assertEqual(xmpp_commands['FEEDS'](self.from_addr), 'List of your feeds:\n%s\n' % url)
-        self.assertEqual(xmpp_commands['DEL'](self.from_addr, url), 'Feed %s removed.\n' % url)
-        self.assertEqual(xmpp_commands['DEL'](self.from_addr, url), 'You are not subscribed to feed %s.\n' % url)
-        self.assertEqual(xmpp_commands['FEEDS'](self.from_addr), 'You have no feeds.\n')
+
+        self.assertEqual(
+                xmpp_commands['PING'](self.from_addr),
+                'PONG\n'
+                )
+
+        self.assertEqual(
+                xmpp_commands['ADD'](self.from_addr, url),
+                'Feed %s added.\n' % url
+                )
+
+        self.assertEqual(
+                xmpp_commands['ADD'](self.from_addr, url),
+                'Feed %s has already been added.\n' % url
+                )
+
+        self.assertEqual(
+                xmpp_commands['ADD'](self.from_addr, url,
+                    'test', 'keywords', u'юникод'),
+                "Feed %s added with keywords '%s'.\n" % (url,
+                    u'test,keywords,юникод')
+                )
+
+        self.assertEqual(
+                xmpp_commands['FEEDS'](self.from_addr),
+                'List of your feeds:\n%s\n%s %s\n' % (
+                        url, url, u'test,keywords,юникод'
+                    )
+                )
+
+        self.assertEqual(
+                xmpp_commands['DEL'](self.from_addr, url),
+                'Feed %s removed.\n' % url
+                )
+
+        self.assertEqual(
+                xmpp_commands['FEEDS'](self.from_addr),
+                'List of your feeds:\n%s %s\n' % (
+                        url, u'test,keywords,юникод'
+                    )
+                )
+
+        self.assertEqual(
+                xmpp_commands['DEL'](self.from_addr, url,
+                    'test', 'keywords', u'юникод'),
+                u"Feed %s with keywords 'test,keywords,юникод' removed.\n" % url
+                )
+
+        self.assertEqual(
+                xmpp_commands['DEL'](self.from_addr, url),
+                'You are not subscribed to feed %s.\n' % url
+                )
+
+        self.assertEqual(
+                xmpp_commands['FEEDS'](self.from_addr),
+                'You have no feeds.\n'
+                )
+
+        self.assertEqual(
+                xmpp_commands['DESTROY'](self.from_addr),
+                "You are about to destroy your account. "
+                "Remind you about your feeds list. It will be lost.\n"
+                "You have no feeds.\n\n"
+                "Your account has been destroyed.\n\n"
+                "Thank you for using this service. Goodbye.\n"
+                )
 
     def test_handle_feed(self):
 

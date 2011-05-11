@@ -33,6 +33,12 @@ class Account(db.Model):
     def by_jid(cls, jid):
         return cls.get_or_insert(jid, jid=db.IM('xmpp', jid))
 
+    def delete(self):
+        for prop in dir(self):
+            if prop.endswith('_set'):
+                db.delete(getattr(self, prop))
+        super(Account, self).delete()
+
 class AuthKey(db.Model):
     account = db.ReferenceProperty(Account)
     authkey = db.StringProperty(required=True)
@@ -52,8 +58,5 @@ class Feed(db.Model):
 class AccountFeed(db.Model):
     feed = db.ReferenceProperty(Feed)
     account = db.ReferenceProperty(Account)
-
-class AccountFeedKeywords(db.Model):
-    accountfeed = db.ReferenceProperty(AccountFeed)
-    keywords = db.StringListProperty()
+    keywords = db.StringProperty()
 

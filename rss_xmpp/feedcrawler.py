@@ -46,9 +46,17 @@ def handle_item(feed, item):
     q = feed.accountfeed_set
     afeeds = q.fetch(q.count())
     logging.debug('%d accountfeeds found' % len(afeeds))
+    notified_users = set()
     for af in afeeds:
-        logging.debug("Sending to: %s" % af.account.jid.address)
-        xmpp.send_message(af.account.jid.address, msg)
+        q = True
+        for keyword in af.keywords.split(','):
+            if keyword not in msg:
+                q = False
+                break
+        if q:
+            logging.debug("Sending to: %s" % af.account.jid.address)
+            xmpp.send_message(af.account.jid.address, msg)
+            notified_users.add(af.account.jid)
 
 def handle_feed(feed, result):
     logging.debug('got %s - %d' % (feed.url, result.status_code))
@@ -64,7 +72,7 @@ def handle_feed(feed, result):
         if item_date <= last_date:
             ignored += 1
             continue
-        logging.debug('new item %s %s' % (item.id, item_date))
+        logging.debug('new item %s %s' % (item.link, item_date))
         if item_date > feed.last_date:
             feed.last_date = item_date
         handle_item(feed, item)

@@ -41,7 +41,7 @@ class XMPPHandler(RequestHandler):
     def handle_message(self, message):
         logging.debug("message from %s: %s" % (message.sender, message.body))
         # XXX: use shlex.split here
-        args = [ i.strip() for i in message.body.split() ]
+        args = message.body.split()
         cmd = args.pop(0).upper()
         logging.debug("command from %s: %s(%s)" % (message.sender, cmd, ", ".join(args)))
         if cmd not in xmpp_commands:

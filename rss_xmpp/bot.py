@@ -20,9 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
+import locale
+LANG, ENCODING = locale.getdefaultlocale()
+locale.setlocale(locale.LC_ALL, (LANG, ENCODING))
 import string
 from random import choice
+import logging
 
 from google.appengine.ext import db
 
@@ -50,38 +53,54 @@ def login_cmd(jid):
     AuthKey(account=Account.by_jid(jid), authkey=key).put()
     return key
 
-def add_cmd(jid, url):
-    """ADD <url>
+def add_cmd(jid, url, *keywords):
+    """ADD <url> [keywords]
     Adds a feed url.
     """
 
     account = Account.by_jid(jid)
     feed = Feed.by_url(url)
+    keywords = ",".join(keywords)
 
-    if AccountFeed.all().filter('account =', account).filter('feed =', feed).count() == 0:
-        AccountFeed(account=account, feed=feed).put()
-        return "Feed %s added.\n" % url
+    if AccountFeed.all().filter('account =', account).filter('feed =', feed).filter('keywords =', keywords).count() == 0:
+        AccountFeed(account=account, feed=feed, keywords=keywords).put()
+        if keywords:
+            return "Feed %s added with keywords '%s'.\n" % (url, keywords)
+        else:
+            return "Feed %s added.\n" % url
     else:
-        return "Feed %s already added.\n" % url
+        if keywords:
+            return "Feed %s has already been added with keywords '%s'.\n" % (url, keywords)
+        else:
+            return "Feed %s has already been added.\n" % url
 
-def del_cmd(jid, url):
-    """DEL <url>
+def del_cmd(jid, url, *keywords):
+    """DEL <url> [keywords]
     Removes a feed from your list.
     """
+
     account = Account.by_jid(jid)
     feed = Feed.by_url(url)
+    keywords = ",".join(keywords)
 
-    q = AccountFeed.all().filter('account =', account).filter('feed =', feed)
+    q = AccountFeed.all().filter('account =', account).filter('feed =', feed).filter('keywords =', keywords)
     count = q.count()
 
     if count > 0:
-        if count != 1: logging.warning('duplicate AccountFeed found!')
+        if count != 1:
+            logging.warning('Duplicate AccountFeed found!')
         afeeds = q.fetch(count)
         for af in afeeds:
             af.delete()
-        return "Feed %s removed.\n" % url
+        if keywords:
+            return "Feed %s with keywords '%s' removed.\n" % (url, keywords)
+        else:
+            return "Feed %s removed.\n" % url
     else:
-        return "You are not subscribed to feed %s.\n" % url
+        if keywords:
+            return "You are not subscribed to feed %s with keywords '%s'.\n" % (url, keywords)
+        else:
+            return "You are not subscribed to feed %s.\n" % url
 
 
 def feeds_cmd(jid):
@@ -94,9 +113,23 @@ def feeds_cmd(jid):
     if count == 0:
         return "You have no feeds.\n"
     return "List of your feeds:\n" + "\n".join([
-            af.feed.url for af in q.fetch(count)
+            '%s %s' % (af.feed.url, af.keywords)
+                if af.keywords else af.feed.url
+                    for af in q.fetch(count)
         ]) + '\n'
 
+def destroy_cmd(jid):
+    """DESTROY
+    Remove all data associated with your account.
+    """
+    msg = (
+            "You are about to destroy your account. Remind you about your "
+            "feeds list. It will be lost.\n%s\n"
+            "Your account has been destroyed.\n\n"
+            "Thank you for using this service. Goodbye.\n"
+           ) % feeds_cmd(jid)
+    Account.by_jid(jid).delete()
+    return msg
 
 xmpp_commands = {
     'HELP': help_cmd,
@@ -104,6 +137,7 @@ xmpp_commands = {
     'LOGIN': login_cmd,
     'ADD': add_cmd,
     'DEL': del_cmd,
+    'DESTROY': destroy_cmd,
     'FEEDS': feeds_cmd,
         }
 
